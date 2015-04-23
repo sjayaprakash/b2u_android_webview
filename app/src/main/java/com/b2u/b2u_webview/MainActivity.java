@@ -1,13 +1,17 @@
 package com.b2u.b2u_webview;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -22,17 +26,24 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
+
         myWebView = (WebView) findViewById(R.id.webview);
         myWebView.setWebChromeClient(new WebChromeClient());
         myWebView.getSettings().setJavaScriptEnabled(true);
-        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         myWebView.setWebViewClient(new MyWebViewClient());
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        CookieManager.getInstance().setAcceptCookie(true);
+        acceptWebCookies();
         myWebView.loadUrl(getString(R.string.domain_full));
-
     }
 
+    @TargetApi(21)
+    private void acceptWebCookies(){
+        if (android.os.Build.VERSION.SDK_INT >= 21) {
+            CookieManager.getInstance().setAcceptThirdPartyCookies(myWebView, true);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -59,8 +70,8 @@ public class MainActivity extends ActionBarActivity {
     private class MyWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            //Log.d("URL", url);
             if (Uri.parse(url).getHost().equals(getString(R.string.domain_main))) {
-                myWebView.clearCache(true);
                 // This is my web site, so do not override; let my WebView load the page
                 return false;
             }
